@@ -1,0 +1,164 @@
+Below is a **clean, strict, simple context.txt** you can paste directly into Cursor to force it to stop overbuilding the project and to keep everything aligned with what you're actually doing.
+
+This will override its assumptions and avoid the huge key-aware, roman-numeral, 24-key, music21 pipeline it tried to generate earlier.
+
+Use this **as your new context.txt**.
+
+---
+
+# ✅ **context.txt (copy/paste this into Cursor)**
+
+**PROJECT SUMMARY**
+This is a **personal portfolio project**, not a production music-theory engine.
+The goal is to build a **simple chord-progression probability explorer** using a **small (1k row) snippet** of the Chordonomicon dataset.
+The system should show next-chord probability bubbles based on N-gram statistics.
+
+**DO NOT** introduce advanced features like:
+
+* key inference
+* roman numeral conversion
+* per-key probability models
+* genre/context-aware models
+* machine-learning models
+* music21 dependence
+* 24-key modeling
+* harmonic function inference
+* scale-degree modeling
+  These may be added later, but **not in this version**.
+
+---
+
+# **CORE REQUIREMENTS**
+
+### 1. **Chord Representation**
+
+* Use **actual chord names only** (e.g., C, G, Amin, Fmaj7)
+* Normalize only lightly (e.g., remove inversions, convert flats → sharps)
+* Ignore roman numerals for now
+
+### 2. **Sequence Extraction**
+
+* Remove section tags like `<verse_1>` or `<chorus_2>`
+* Extract a simple linear chord sequence from each song
+* Keep everything key-agnostic
+
+### 3. **Models to Build**
+
+Build **three** statistical models:
+
+* **Unigram (Markov-1):** P(next | chord)
+* **Bigram (N-gram-2):** P(next | previous 2 chords)
+* **Trigram (N-gram-3):** P(next | previous 3 chords)
+
+### 4. **Probability Combination**
+
+Use **interpolation** with lambda weights:
+
+* λ₃ = 0.60 (trigram)
+* λ₂ = 0.30 (bigram)
+* λ₁ = 0.10 (unigram)
+
+### 5. **Backoff Threshold**
+
+If a trigram or bigram context has **fewer than 3 occurrences**, reduce its weight accordingly (soft backoff).
+Fallback smoothly, not abruptly.
+
+### 6. **Output Format**
+
+Export **three JSON files**, static:
+
+* `unigram.json`
+* `bigram.json`
+* `trigram.json`
+
+Structure example:
+
+```json
+{
+  "C": { "G": 0.30, "F": 0.20, "Amin": 0.18 }
+}
+```
+
+Or for bigram:
+
+```json
+{
+  "C,G": { "Amin": 0.40, "F": 0.10 }
+}
+```
+
+### 7. **Frontend**
+
+Frontend loads static JSON from `/public/data/` and:
+
+* given the user's chord history
+* looks up N-gram probabilities
+* computes blended probability vector
+* visualizes results using bubbles and arrows
+
+The frontend is simple and only needs:
+
+* a chord-click UI
+* bubble visualization
+* state for current progression + next chord options
+
+### 8. **Tech Stack**
+
+This project should remain **lightweight:**
+
+**Backend (preprocessing):**
+
+* Python
+* pandas or polars
+* No external music-theory libraries
+
+**Frontend:**
+
+* Next.js or simple React
+* Tailwind
+* D3.js or visx (optional)
+
+---
+
+# **SCOPE RESTRICTIONS (IMPORTANT)**
+
+Cursor should **NOT** add any of the following in this version:
+
+* Key inference
+* Roman numeral conversion
+* 24-key export
+* Genre conditioning
+* Machine learning (LSTM/Transformer)
+* Harmonic function clustering
+* Complex chord-type parsing
+* MIDI features
+* Audio features
+* Database integration
+* Multi-file per-key probability models
+* music21 or other music theory libraries
+
+The project must stay **small, simple, N-gram based**, key-agnostic, and front-end–friendly.
+
+---
+
+# **GOAL**
+
+Produce an implementation plan and code that:
+
+* Uses **only actual chord names**
+* Builds **unigram, bigram, and trigram** models
+* Combines them using **interpolation**
+* Uses a **threshold of 3** for backoff smoothing
+* Exports **three lightweight JSON files**
+* Allows a frontend UI to show **next chord probabilities**
+* Does **not** introduce unnecessary complexity
+
+This is a **portfolio visualization project**, not a full music-theory engine.
+
+---
+
+# END OF context.txt
+
+---
+
+If you want, I can also create a **matching planning prompt** that you paste into Cursor after the context.txt, so the plan and code generation stay aligned perfectly.
