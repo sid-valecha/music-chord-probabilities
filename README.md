@@ -33,6 +33,8 @@ The dataset used in this project is [CHORDONOMICON: A Dataset of 666,000 Songs a
 
 Github: [https://github.com/spyroskantarelis/chordonomicon](https://github.com/spyroskantarelis/chordonomicon)
 
+**Note:** The Chordonomicon dataset is licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) (Creative Commons Attribution-NonCommercial 4.0 International). Please refer to the dataset license for usage restrictions.
+
 
 ## Quick Start
 
@@ -107,5 +109,7 @@ npm run build
 
 ## License
 
-MIT
+This project's source code is licensed under the MIT License.
+
+**Important:** The Chordonomicon dataset used in this project is separately licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) (Creative Commons Attribution-NonCommercial 4.0 International). The dataset license applies to the dataset files themselves, not to this project's code.
 
