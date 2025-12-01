@@ -24,6 +24,16 @@ chord-probability/
 └── data/                 # Original dataset
 ```
 
+## Dataset
+The dataset used in this project is [CHORDONOMICON: A Dataset of 666,000 Songs and their Chord Progressions](https://arxiv.org/abs/2410.22046) [@kantarelis2024chordonomicon]:
+
+> Kantarelis, Spyridon and Thomas, Konstantinos and Lyberatos, Vassilis and Dervakos, Edmund and Stamou, Giorgos.  
+> **CHORDONOMICON: A Dataset of 666,000 Songs and their Chord Progressions.**  
+> arXiv preprint arXiv:2410.22046, 2024. 
+
+Github: [https://github.com/spyroskantarelis/chordonomicon](https://github.com/spyroskantarelis/chordonomicon)
+
+
 ## Quick Start
 
 ### Backend Pipeline
