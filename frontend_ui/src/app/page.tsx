@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Models, InterpolationWeights } from '@/types';
-import { loadModels } from '@/lib/dataLoader';
+import { Models, InterpolationWeights, SavedProgression } from '@/types';
+import { loadModels, LoadProgress } from '@/lib/dataLoader';
 import { computeProbabilities } from '@/lib/probability';
 import ProgressionBar from '@/components/ProgressionBar';
 import ProbabilityBubbles from '@/components/ProbabilityBubbles';
+import SavedProgressions from '@/components/SavedProgressions';
 
 const DEFAULT_WEIGHTS: InterpolationWeights = {
   lambda3: 0.60,
@@ -13,16 +14,21 @@ const DEFAULT_WEIGHTS: InterpolationWeights = {
   lambda1: 0.10,
 };
 
+function generateId(): string {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
 export default function Home() {
   const [models, setModels] = useState<Models | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadProgress, setLoadProgress] = useState<LoadProgress>({ loaded: 0, total: 3, currentFile: '' });
   const [progression, setProgression] = useState<string[]>([]);
   const [nextChordProbs, setNextChordProbs] = useState<Record<string, number>>({});
+  const [savedProgressions, setSavedProgressions] = useState<SavedProgression[]>([]);
 
   useEffect(() => {
-    // Load models on mount
-    loadModels()
+    loadModels((progress) => setLoadProgress(progress))
       .then(setModels)
       .catch((err) => {
         console.error('Failed to load models:', err);
@@ -32,7 +38,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Update probabilities when progression changes
     if (models && progression.length > 0) {
       const probs = computeProbabilities(progression, models, DEFAULT_WEIGHTS);
       setNextChordProbs(probs);
@@ -53,12 +58,44 @@ export default function Home() {
     setProgression([]);
   };
 
+  const handleSaveProgression = () => {
+    if (progression.length === 0) return;
+
+    const newProgression: SavedProgression = {
+      id: generateId(),
+      chords: [...progression],
+      timestamp: Date.now(),
+    };
+
+    setSavedProgressions([newProgression, ...savedProgressions]);
+  };
+
+  const handleRemoveSavedProgression = (id: string) => {
+    setSavedProgressions(savedProgressions.filter((p) => p.id !== id));
+  };
+
   if (loading) {
+    const progressPercent = (loadProgress.loaded / loadProgress.total) * 100;
+
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading probability models...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center animate-fade-in w-full max-w-sm px-6">
+          <div className="w-12 h-12 mx-auto mb-6 border-4 border-gray-200 border-t-brand-600 rounded-full animate-spin"></div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+            Loading Models
+          </h2>
+          <p className="text-sm text-gray-500 mb-6">
+            {loadProgress.currentFile ? `Loading ${loadProgress.currentFile}...` : 'Preparing...'}
+          </p>
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div
+              className="h-full bg-brand-600 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-2">
+            {loadProgress.loaded} of {loadProgress.total}
+          </p>
         </div>
       </div>
     );
@@ -66,50 +103,62 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-md p-6 bg-red-50 border border-red-200 rounded-lg">
-          <h1 className="text-xl font-bold text-red-800 mb-2">Error</h1>
-          <p className="text-red-600">{error}</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="card max-w-md p-6 text-center animate-fade-in">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h1 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load</h1>
+          <p className="text-sm text-gray-600">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+    <div className="min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        {/* Header */}
+        <header className="text-center mb-10 animate-fade-in">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Chord Probability Explorer
           </h1>
           <p className="text-gray-600">
-            Explore chord progression probabilities using N-gram models
+            Build progressions with AI predictions trained on real songs
           </p>
         </header>
 
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        {/* Current Progression */}
+        <section className="card p-6 mb-6 animate-fade-in-up">
           <ProgressionBar
             progression={progression}
             onChordClick={handleRemoveChord}
             onClear={handleClear}
+            onSave={handleSaveProgression}
           />
-        </div>
+        </section>
 
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        {/* Chord Selection / Predictions */}
+        <section className="card p-6 mb-6 animate-fade-in-up">
           {progression.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-4">
-                Start by clicking a chord below to build a progression.
+            <div className="text-center py-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                Start Building
+              </h2>
+              <p className="text-sm text-gray-500 mb-6">
+                Click a chord to begin your progression
               </p>
               {models && (
                 <div className="flex flex-wrap gap-2 justify-center">
                   {Object.keys(models.unigram)
-                    .slice(0, 20)
+                    .slice(0, 16)
                     .map((chord) => (
                       <button
                         key={chord}
                         onClick={() => handleChordClick(chord)}
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition font-medium"
+                        className="chord-chip-outline"
                       >
                         {chord}
                       </button>
@@ -121,22 +170,28 @@ export default function Home() {
             <ProbabilityBubbles
               probabilities={nextChordProbs}
               onChordClick={handleChordClick}
-              maxDisplay={20}
+              maxDisplay={16}
             />
           )}
-        </div>
+        </section>
 
-        {models && (
-          <div className="mt-6 text-center text-sm text-gray-500">
+        {/* Saved Progressions */}
+        <section className="card p-6 animate-fade-in-up">
+          <SavedProgressions
+            progressions={savedProgressions}
+            onRemove={handleRemoveSavedProgression}
+          />
+        </section>
+
+        {/* Footer */}
+        <footer className="mt-8 text-center text-xs text-gray-400">
+          {models && (
             <p>
-              Models loaded: {Object.keys(models.unigram).length} unigram contexts,{' '}
-              {Object.keys(models.bigram).length} bigram contexts,{' '}
-              {Object.keys(models.trigram).length} trigram contexts
+              {Object.keys(models.unigram).length.toLocaleString()} chords · {Object.keys(models.bigram).length.toLocaleString()} bigrams · {Object.keys(models.trigram).length.toLocaleString()} trigrams
             </p>
-          </div>
-        )}
+          )}
+        </footer>
       </div>
     </div>
   );
 }
-
