@@ -184,12 +184,13 @@ export default function Home() {
         </section>
 
         {/* Footer */}
-        <footer className="mt-8 text-center text-xs text-gray-400">
+        <footer className="mt-12 pt-8 border-t border-gray-200 text-center text-xs text-gray-400">
           {models && (
-            <p>
+            <p className="mb-4">
               {Object.keys(models.unigram).length.toLocaleString()} chords · {Object.keys(models.bigram).length.toLocaleString()} bigrams · {Object.keys(models.trigram).length.toLocaleString()} trigrams
             </p>
           )}
+          <p>© Sid Valecha 2026</p>
         </footer>
       </div>
     </div>
