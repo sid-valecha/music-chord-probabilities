@@ -23,3 +23,9 @@ export interface AppState {
   nextChordProbabilities: Record<string, number>;
 }
 
+export interface SavedProgression {
+  id: string;
+  chords: string[];
+  timestamp: number;
+}
+

@@ -11,9 +11,8 @@ interface ProbabilityBubblesProps {
 export default function ProbabilityBubbles({
   probabilities,
   onChordClick,
-  maxDisplay = 20,
+  maxDisplay = 16,
 }: ProbabilityBubblesProps) {
-  // Sort chords by probability and take top N
   const sortedChords = useMemo(() => {
     return Object.entries(probabilities)
       .sort(([, a], [, b]) => b - a)
@@ -22,54 +21,59 @@ export default function ProbabilityBubbles({
 
   if (sortedChords.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        <p>No probabilities available. Select chords to see next chord predictions.</p>
+      <div className="text-center py-8">
+        <p className="text-gray-500 text-sm">
+          Select chords to see predictions
+        </p>
       </div>
     );
   }
 
-  // Find max probability for scaling
   const maxProb = sortedChords[0]?.[1] || 1;
 
   return (
     <div className="w-full">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Next Chord Probabilities</h2>
-      <div className="flex flex-wrap gap-4 items-end justify-center">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Next Chord Predictions</h2>
+          <p className="text-sm text-gray-500">Click to add to your progression</p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-3 justify-center items-center py-4">
         {sortedChords.map(([chord, prob]) => {
-          // Scale bubble size (min 40px, max 120px)
-          const size = 40 + (prob / maxProb) * 80;
-          const opacity = 0.6 + (prob / maxProb) * 0.4;
+          const normalizedProb = prob / maxProb;
+          const size = 40 + normalizedProb * 70;
 
           return (
-            <div
+            <button
               key={chord}
-              className="flex flex-col items-center cursor-pointer group"
               onClick={() => onChordClick(chord)}
+              className="flex flex-col items-center group"
             >
               <div
-                className="rounded-full bg-blue-500 text-white font-semibold flex items-center justify-center transition-all hover:scale-110 hover:shadow-lg"
+                className="rounded-full flex items-center justify-center font-semibold text-white bg-brand-600 hover:bg-brand-700 transition-colors shadow-sm"
                 style={{
                   width: `${size}px`,
                   height: `${size}px`,
-                  opacity,
+                  fontSize: `${Math.max(12, size / 4)}px`,
                 }}
-                title={`${chord}: ${(prob * 100).toFixed(1)}%`}
               >
-                <span className="text-sm">{chord}</span>
+                {chord}
               </div>
-              <span className="text-xs text-gray-600 mt-1">
+              <span className="text-xs text-gray-500 mt-1.5 group-hover:text-brand-600 transition-colors">
                 {(prob * 100).toFixed(1)}%
               </span>
-            </div>
+            </button>
           );
         })}
       </div>
+
       {Object.keys(probabilities).length > maxDisplay && (
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Showing top {maxDisplay} of {Object.keys(probabilities).length} chords
+        <p className="text-center text-xs text-gray-400 mt-4">
+          Showing top {maxDisplay} of {Object.keys(probabilities).length}
         </p>
       )}
     </div>
   );
 }
-

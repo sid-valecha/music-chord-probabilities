@@ -2,12 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased text-gray-900;
+    background: linear-gradient(135deg, #fefefe 0%, #f8f6f4 25%, #f5f0eb 50%, #f0ebe5 100%);
+    min-height: 100vh;
+  }
 }
 
+@layer components {
+  .btn-primary {
+    @apply px-5 py-2.5 font-medium text-white rounded-lg
+           bg-brand-600 hover:bg-brand-700
+           transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 font-medium text-gray-700 rounded-lg
+           border border-gray-300 bg-white
+           hover:bg-gray-50
+           transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2;
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 font-medium text-red-600 rounded-lg
+           hover:bg-red-50
+           transition-colors duration-150;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-card border border-gray-100;
+  }
+
+  .chord-chip {
+    @apply inline-flex items-center justify-center
+           px-4 py-2 min-w-[3rem]
+           font-semibold text-base
+           rounded-lg
+           bg-brand-600 text-white
+           hover:bg-brand-700
+           transition-all duration-150
+           cursor-pointer select-none;
+  }
+
+  .chord-chip-outline {
+    @apply inline-flex items-center justify-center
+           px-4 py-2 min-w-[3rem]
+           font-medium text-sm
+           rounded-lg
+           border border-gray-200 bg-white
+           text-gray-700
+           hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700
+           transition-all duration-150
+           cursor-pointer select-none;
+  }
+}
