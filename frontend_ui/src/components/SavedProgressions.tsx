@@ -93,14 +93,14 @@ export default function SavedProgressions({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">Saved Progressions</h2>
           <p className="text-sm text-gray-500">{progressions.length} saved</p>
         </div>
         <button
           onClick={() => exportToCSV(progressions)}
-          className="btn-secondary flex items-center gap-1.5"
+          className="btn-secondary flex items-center gap-1.5 whitespace-nowrap"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
