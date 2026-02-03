@@ -10,6 +10,7 @@ interface ProgressionBarProps {
   onSave?: () => void;
   onDownloadMidi?: () => void;
   onPlayMidi?: () => void;
+  onStopMidi?: () => void;
   isPlaying?: boolean;
 }
 
@@ -20,6 +21,7 @@ export default function ProgressionBar({
   onSave,
   onDownloadMidi,
   onPlayMidi,
+  onStopMidi,
   isPlaying = false,
 }: ProgressionBarProps) {
   return (
@@ -33,14 +35,18 @@ export default function ProgressionBar({
           <div className="col-span-2 row-start-2 flex flex-wrap items-center gap-2 sm:col-span-1 sm:row-start-1 sm:col-start-2 sm:justify-self-end">
             {onPlayMidi && (
               <button
-                onClick={onPlayMidi}
+                onClick={isPlaying ? onStopMidi : onPlayMidi}
                 className="btn-secondary flex items-center gap-1.5 whitespace-nowrap"
-                disabled={isPlaying}
+                disabled={isPlaying && !onStopMidi}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9L5 3z" />
+                  {isPlaying ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 6h12v12H6z" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9L5 3z" />
+                  )}
                 </svg>
-                {isPlaying ? 'Playing' : 'Play'}
+                {isPlaying ? 'Stop' : 'Play'}
               </button>
             )}
             {onDownloadMidi && (
