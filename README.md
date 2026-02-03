@@ -2,6 +2,8 @@
 
 A chord progression probability explorer built with N-gram models. This project analyzes chord sequences from the Chordonomicon dataset and provides an interactive web interface for exploring chord transition probabilities.
 
+**Check it out here**: https://sidvalecha.com/chord-probabilities/
+
 ## Features
 
 - **Scalable Backend Pipeline**: Processes datasets from 1k to 680k+ rows efficiently
