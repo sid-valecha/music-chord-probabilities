@@ -7,6 +7,8 @@ import { computeProbabilities } from '@/lib/probability';
 import ProgressionBar from '@/components/ProgressionBar';
 import ProbabilityBubbles from '@/components/ProbabilityBubbles';
 import SavedProgressions from '@/components/SavedProgressions';
+import { buildMidiFile, makeMidiFilename, playChordProgression } from '@/lib/midi';
+import { formatChordDisplay } from '@/lib/chordFormat';
 
 const DEFAULT_WEIGHTS: InterpolationWeights = {
   lambda3: 0.60,
@@ -26,6 +28,7 @@ export default function Home() {
   const [progression, setProgression] = useState<string[]>([]);
   const [nextChordProbs, setNextChordProbs] = useState<Record<string, number>>({});
   const [savedProgressions, setSavedProgressions] = useState<SavedProgression[]>([]);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     loadModels((progress) => setLoadProgress(progress))
@@ -72,6 +75,32 @@ export default function Home() {
 
   const handleRemoveSavedProgression = (id: string) => {
     setSavedProgressions(savedProgressions.filter((p) => p.id !== id));
+  };
+
+  const handleDownloadMidi = () => {
+    if (progression.length === 0) return;
+    const midiBytes = buildMidiFile(progression);
+    const blob = new Blob([midiBytes], { type: 'audio/midi' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = makeMidiFilename(progression);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePlayMidi = async () => {
+    if (progression.length === 0 || isPlaying) return;
+    setIsPlaying(true);
+    try {
+      const duration = await playChordProgression(progression);
+      window.setTimeout(() => setIsPlaying(false), duration * 1000);
+    } catch (err) {
+      console.error('Failed to play progression:', err);
+      setIsPlaying(false);
+    }
   };
 
   if (loading) {
@@ -137,6 +166,9 @@ export default function Home() {
             onChordClick={handleRemoveChord}
             onClear={handleClear}
             onSave={handleSaveProgression}
+            onDownloadMidi={handleDownloadMidi}
+            onPlayMidi={handlePlayMidi}
+            isPlaying={isPlaying}
           />
         </section>
 
@@ -160,7 +192,7 @@ export default function Home() {
                         onClick={() => handleChordClick(chord)}
                         className="chord-chip-outline"
                       >
-                        {chord}
+                        {formatChordDisplay(chord)}
                       </button>
                     ))}
                 </div>

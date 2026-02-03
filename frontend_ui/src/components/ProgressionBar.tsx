@@ -1,12 +1,16 @@
 'use client';
 
 import React from 'react';
+import { formatChordDisplay } from '@/lib/chordFormat';
 
 interface ProgressionBarProps {
   progression: string[];
   onChordClick?: (index: number) => void;
   onClear?: () => void;
   onSave?: () => void;
+  onDownloadMidi?: () => void;
+  onPlayMidi?: () => void;
+  isPlaying?: boolean;
 }
 
 export default function ProgressionBar({
@@ -14,6 +18,9 @@ export default function ProgressionBar({
   onChordClick,
   onClear,
   onSave,
+  onDownloadMidi,
+  onPlayMidi,
+  isPlaying = false,
 }: ProgressionBarProps) {
   return (
     <div className="w-full">
@@ -24,6 +31,26 @@ export default function ProgressionBar({
         </div>
         {progression.length > 0 && (
           <div className="flex items-center gap-2">
+            {onPlayMidi && (
+              <button
+                onClick={onPlayMidi}
+                className="btn-secondary flex items-center gap-1.5"
+                disabled={isPlaying}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9L5 3z" />
+                </svg>
+                {isPlaying ? 'Playing' : 'Play'}
+              </button>
+            )}
+            {onDownloadMidi && (
+              <button onClick={onDownloadMidi} className="btn-secondary flex items-center gap-1.5">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download MIDI
+              </button>
+            )}
             {onSave && (
               <button onClick={onSave} className="btn-secondary flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +83,7 @@ export default function ProgressionBar({
                 onClick={() => onChordClick?.(index)}
                 className="chord-chip group relative"
               >
-                {chord}
+                {formatChordDisplay(chord)}
                 <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   ×
                 </span>

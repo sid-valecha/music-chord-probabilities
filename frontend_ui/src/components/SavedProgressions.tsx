@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { SavedProgression } from '@/types';
+import { formatChordDisplay } from '@/lib/chordFormat';
 
 interface SavedProgressionsProps {
   progressions: SavedProgression[];
@@ -14,7 +15,7 @@ function exportToCSV(progressions: SavedProgression[]) {
   const headers = ['#', 'Chords', 'Length', 'Timestamp'];
   const rows = progressions.map((p, index) => [
     progressions.length - index,
-    p.chords.join(' → '),
+    p.chords.map(formatChordDisplay).join(' → '),
     p.chords.length,
     new Date(p.timestamp).toISOString(),
   ]);
@@ -86,7 +87,7 @@ export default function SavedProgressions({
                     key={`${chord}-${chordIndex}`}
                     className="px-2 py-1 text-xs font-medium rounded bg-brand-100 text-brand-700"
                   >
-                    {chord}
+                    {formatChordDisplay(chord)}
                   </span>
                 ))}
               </div>

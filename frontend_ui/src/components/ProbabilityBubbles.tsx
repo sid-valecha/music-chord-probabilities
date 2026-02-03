@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import { formatChordDisplay } from '@/lib/chordFormat';
 
 interface ProbabilityBubblesProps {
   probabilities: Record<string, number>;
@@ -59,7 +60,7 @@ export default function ProbabilityBubbles({
                   fontSize: `${Math.max(12, size / 4)}px`,
                 }}
               >
-                {chord}
+                {formatChordDisplay(chord)}
               </div>
               <span className="text-xs text-gray-500 mt-1.5 group-hover:text-brand-600 transition-colors">
                 {(prob * 100).toFixed(1)}%
