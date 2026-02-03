@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { SavedProgression } from '@/types';
 import { formatChordDisplay } from '@/lib/chordFormat';
+import { buildMidiFile, makeMidiFilename, playChordProgression } from '@/lib/midi';
 
 interface SavedProgressionsProps {
   progressions: SavedProgression[];
@@ -40,6 +41,34 @@ export default function SavedProgressions({
   progressions,
   onRemove,
 }: SavedProgressionsProps) {
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+  const handleDownloadMidi = (chords: string[]) => {
+    if (chords.length === 0) return;
+    const midiBytes = buildMidiFile(chords);
+    const blob = new Blob([midiBytes], { type: 'audio/midi' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = makeMidiFilename(chords);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePlayMidi = async (id: string, chords: string[]) => {
+    if (chords.length === 0 || playingId) return;
+    setPlayingId(id);
+    try {
+      const duration = await playChordProgression(chords);
+      window.setTimeout(() => setPlayingId(null), duration * 1000);
+    } catch (err) {
+      console.error('Failed to play progression:', err);
+      setPlayingId(null);
+    }
+  };
+
   if (progressions.length === 0) {
     return (
       <div className="text-center py-8">
@@ -92,15 +121,36 @@ export default function SavedProgressions({
                 ))}
               </div>
             </div>
-            <button
-              onClick={() => onRemove(progression.id)}
-              className="p-1.5 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors ml-3"
-              title="Remove progression"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-1.5 ml-3">
+              <button
+                onClick={() => handlePlayMidi(progression.id, progression.chords)}
+                className="p-1.5 rounded text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                title="Play MIDI"
+                disabled={playingId === progression.id}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9L5 3z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => handleDownloadMidi(progression.chords)}
+                className="p-1.5 rounded text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+                title="Download MIDI"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </button>
+              <button
+                onClick={() => onRemove(progression.id)}
+                className="p-1.5 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                title="Remove progression"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
         ))}
       </div>
