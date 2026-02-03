@@ -24,13 +24,13 @@ export default function ProgressionBar({
 }: ProgressionBarProps) {
   return (
     <div className="w-full">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-        <div>
+      <div className="grid grid-cols-[1fr_auto] gap-y-3 items-center sm:grid-cols-[1fr_auto_auto] sm:gap-y-0 mb-4">
+        <div className="col-start-1 row-start-1">
           <h2 className="text-lg font-semibold text-gray-900">Current Progression</h2>
           <p className="text-sm text-gray-500">Click a chord to remove it</p>
         </div>
         {progression.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <div className="col-span-2 row-start-2 flex flex-wrap items-center gap-2 sm:col-span-1 sm:row-start-1 sm:col-start-2 sm:justify-self-end">
             {onPlayMidi && (
               <button
                 onClick={onPlayMidi}
@@ -59,15 +59,18 @@ export default function ProgressionBar({
                 Save
               </button>
             )}
-            {onClear && (
-              <button onClick={onClear} className="btn-danger flex items-center gap-1.5 whitespace-nowrap">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                Clear
-              </button>
-            )}
           </div>
+        )}
+        {progression.length > 0 && onClear && (
+          <button
+            onClick={onClear}
+            className="btn-danger flex items-center gap-1.5 whitespace-nowrap col-start-2 row-start-1 justify-self-end sm:col-start-3"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Clear
+          </button>
         )}
       </div>
       <div className="min-h-[3.5rem] p-4 rounded-lg bg-gray-50 border border-gray-200">
