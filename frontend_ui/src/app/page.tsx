@@ -175,6 +175,19 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <div className="max-w-4xl mx-auto px-4 py-12">
+        <nav className="mb-6 flex items-center justify-start">
+          <a
+            href="https://sidvalecha.com"
+            className="btn-secondary flex items-center gap-2 text-sm"
+            aria-label="Back to home page"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to home page
+          </a>
+        </nav>
+
         {/* Header */}
         <header className="text-center mb-10 animate-fade-in">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
