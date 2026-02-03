@@ -10,6 +10,14 @@ interface SavedProgressionsProps {
   onRemove: (id: string) => void;
 }
 
+function sanitizeCsvCell(value: string | number): string {
+  const text = String(value);
+  if (/^[=+\-@]/.test(text)) {
+    return `'${text}`;
+  }
+  return text;
+}
+
 function exportToCSV(progressions: SavedProgression[]) {
   if (progressions.length === 0) return;
 
@@ -22,8 +30,8 @@ function exportToCSV(progressions: SavedProgression[]) {
   ]);
 
   const csvContent = [
-    headers.join(','),
-    ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
+    headers.map(sanitizeCsvCell).join(','),
+    ...rows.map(row => row.map(cell => `"${sanitizeCsvCell(cell)}"`).join(',')),
   ].join('\n');
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
