@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Models, InterpolationWeights, SavedProgression } from '@/types';
 import { loadModels, LoadProgress } from '@/lib/dataLoader';
 import { computeProbabilities } from '@/lib/probability';
 import ProgressionBar from '@/components/ProgressionBar';
 import ProbabilityBubbles from '@/components/ProbabilityBubbles';
 import SavedProgressions from '@/components/SavedProgressions';
-import { buildMidiFile, makeMidiFilename, playChordProgression } from '@/lib/midi';
+import { buildMidiFile, makeMidiFilename, onPlaybackStopped, playChordProgression, stopChordProgression } from '@/lib/midi';
 import { formatChordDisplay } from '@/lib/chordFormat';
 
 const DEFAULT_WEIGHTS: InterpolationWeights = {
@@ -29,6 +29,7 @@ export default function Home() {
   const [nextChordProbs, setNextChordProbs] = useState<Record<string, number>>({});
   const [savedProgressions, setSavedProgressions] = useState<SavedProgression[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const playTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     loadModels((progress) => setLoadProgress(progress))
@@ -48,6 +49,17 @@ export default function Home() {
       setNextChordProbs({});
     }
   }, [progression, models]);
+
+  useEffect(() => {
+    const unsubscribe = onPlaybackStopped(() => {
+      if (playTimeoutRef.current) {
+        window.clearTimeout(playTimeoutRef.current);
+        playTimeoutRef.current = null;
+      }
+      setIsPlaying(false);
+    });
+    return unsubscribe;
+  }, []);
 
   const handleChordClick = (chord: string) => {
     setProgression([...progression, chord]);
@@ -93,14 +105,28 @@ export default function Home() {
 
   const handlePlayMidi = async () => {
     if (progression.length === 0 || isPlaying) return;
-    setIsPlaying(true);
     try {
+      await stopChordProgression();
+      setIsPlaying(true);
       const duration = await playChordProgression(progression);
-      window.setTimeout(() => setIsPlaying(false), duration * 1000);
+      if (playTimeoutRef.current) {
+        window.clearTimeout(playTimeoutRef.current);
+      }
+      playTimeoutRef.current = window.setTimeout(() => setIsPlaying(false), duration * 1000);
     } catch (err) {
       console.error('Failed to play progression:', err);
       setIsPlaying(false);
     }
+  };
+
+  const handleStopMidi = async () => {
+    if (!isPlaying) return;
+    if (playTimeoutRef.current) {
+      window.clearTimeout(playTimeoutRef.current);
+      playTimeoutRef.current = null;
+    }
+    await stopChordProgression();
+    setIsPlaying(false);
   };
 
   if (loading) {
@@ -168,6 +194,7 @@ export default function Home() {
             onSave={handleSaveProgression}
             onDownloadMidi={handleDownloadMidi}
             onPlayMidi={handlePlayMidi}
+            onStopMidi={handleStopMidi}
             isPlaying={isPlaying}
           />
         </section>

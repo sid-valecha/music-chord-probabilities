@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SavedProgression } from '@/types';
 import { formatChordDisplay } from '@/lib/chordFormat';
-import { buildMidiFile, makeMidiFilename, playChordProgression } from '@/lib/midi';
+import { buildMidiFile, makeMidiFilename, onPlaybackStopped, playChordProgression, stopChordProgression } from '@/lib/midi';
 
 interface SavedProgressionsProps {
   progressions: SavedProgression[];
@@ -50,6 +50,18 @@ export default function SavedProgressions({
   onRemove,
 }: SavedProgressionsProps) {
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const playTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onPlaybackStopped(() => {
+      if (playTimeoutRef.current) {
+        window.clearTimeout(playTimeoutRef.current);
+        playTimeoutRef.current = null;
+      }
+      setPlayingId(null);
+    });
+    return unsubscribe;
+  }, []);
 
   const handleDownloadMidi = (chords: string[]) => {
     if (chords.length === 0) return;
@@ -67,14 +79,28 @@ export default function SavedProgressions({
 
   const handlePlayMidi = async (id: string, chords: string[]) => {
     if (chords.length === 0 || playingId) return;
-    setPlayingId(id);
     try {
+      await stopChordProgression();
+      setPlayingId(id);
       const duration = await playChordProgression(chords);
-      window.setTimeout(() => setPlayingId(null), duration * 1000);
+      if (playTimeoutRef.current) {
+        window.clearTimeout(playTimeoutRef.current);
+      }
+      playTimeoutRef.current = window.setTimeout(() => setPlayingId(null), duration * 1000);
     } catch (err) {
       console.error('Failed to play progression:', err);
       setPlayingId(null);
     }
+  };
+
+  const handleStopMidi = async () => {
+    if (!playingId) return;
+    if (playTimeoutRef.current) {
+      window.clearTimeout(playTimeoutRef.current);
+      playTimeoutRef.current = null;
+    }
+    await stopChordProgression();
+    setPlayingId(null);
   };
 
   if (progressions.length === 0) {
@@ -131,13 +157,20 @@ export default function SavedProgressions({
             </div>
             <div className="flex items-center gap-1.5 ml-3">
               <button
-                onClick={() => handlePlayMidi(progression.id, progression.chords)}
+                onClick={() =>
+                  playingId === progression.id
+                    ? handleStopMidi()
+                    : handlePlayMidi(progression.id, progression.chords)
+                }
                 className="p-1.5 rounded text-gray-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
-                title="Play MIDI"
-                disabled={playingId === progression.id}
+                title={playingId === progression.id ? 'Stop MIDI' : 'Play MIDI'}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9L5 3z" />
+                  {playingId === progression.id ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 6h12v12H6z" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v18l15-9L5 3z" />
+                  )}
                 </svg>
               </button>
               <button

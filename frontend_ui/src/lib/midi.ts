@@ -146,6 +146,12 @@ export function makeMidiFilename(chords: string[]): string {
 }
 
 let audioContext: AudioContext | null = null;
+const stopListeners = new Set<() => void>();
+
+export function onPlaybackStopped(listener: () => void): () => void {
+  stopListeners.add(listener);
+  return () => stopListeners.delete(listener);
+}
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -190,4 +196,19 @@ export async function playChordProgression(chords: string[]): Promise<number> {
   });
 
   return totalDuration;
+}
+
+export async function stopChordProgression(): Promise<void> {
+  if (!audioContext) return;
+  const ctx = audioContext;
+  audioContext = null;
+  try {
+    if (ctx.state !== 'closed') {
+      await ctx.close();
+    }
+  } catch (error) {
+    console.warn('Failed to stop audio context:', error);
+  } finally {
+    stopListeners.forEach((listener) => listener());
+  }
 }
